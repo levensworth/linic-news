@@ -5,7 +5,7 @@ export interface Article {
     sourceIcon: string;
     url: string;
     content: string;
-  }
+}
   
 export interface NewsItem {
     id: string;
@@ -17,7 +17,7 @@ export interface NewsItem {
     description: string;
     summary: string;
     articles: Article[];
-  }
+}
   
 export const mockNews: NewsItem[] = [
     {
