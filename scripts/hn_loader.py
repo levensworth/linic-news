@@ -445,7 +445,7 @@ async def main():
         
     await client.close()
     
-    path =pathlib.Path(__file__).parent.joinpath('web', 'src', 'result.json')
+    path =pathlib.Path(__file__).parent.parent.joinpath('web', 'src', 'result.json')
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, 'w') as f:
         json.dump(news, f)
