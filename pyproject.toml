@@ -3,7 +3,7 @@ name = "linic-news"
 version = "0.1.0"
 description = "News aggregation and summarization project"
 readme = "README.md"
-requires-python = ">=3.10.14"
+requires-python = ">=3.10.14,<4.0"
 dependencies = [
     "apscheduler>=3.11.0",
     "dependency-injector>=4.45.0",
@@ -14,6 +14,10 @@ dependencies = [
     "pydantic-settings>=2.7.1",
     "ruff>=0.9.1",
     "toradh>=0.2.2",
+    "openai (>=1.76.0,<2.0.0)",
+    "hackernews (>=2.0.0,<3.0.0)",
+    "tiktoken (>=0.9.0,<0.10.0)",
+    "beautifulsoup4 (>=4.13.4,<5.0.0)",
 ]
 
 
@@ -68,3 +72,8 @@ cache_dir = ".mypy_cache"
 
 # Exclude certain files or directories from type checking (e.g., migrations in Django projects)
 exclude = ["migrations", "docs", "build"]
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = "^1.1.0"
+mypy = "^1.15.0"
+
