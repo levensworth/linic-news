@@ -415,31 +415,33 @@ async def main():
     news = []
     for story in top_stories:
         
-
-        print(f'generating articles for post about {story.title}')
-        full_story = await gather_full_story_corpus(client, story)
-        article_content = generate_article(full_story)
-        article_summary = generate_lead(article_content)
-        # article_img = generate_image(article_summary)
-        news.append(
-        json.loads(NewsItem(
-            id=str(story.id),
-            title=story.title,
-            date=datetime.datetime.fromtimestamp(story.time),
-            labels=[],
-            coverImage='',
-            description=article_summary,
-            summary=article_summary,
-            content=article_content,
-            sources=[
-                ArticleSource(id='1',
-                              title=story.title,
-                              sourceName='HackerNews',
-                              sourceIcon='https://news.ycombinator.com/y18.svg',
-                              url=story.url or '')
-            ]
-        ).model_dump_json(by_alias=True))
-    )
+        try:
+            print(f'generating articles for post about {story.title}')
+            full_story = await gather_full_story_corpus(client, story)
+            article_content = generate_article(full_story)
+            article_summary = generate_lead(article_content)
+            # article_img = generate_image(article_summary)
+            news.append(
+            json.loads(NewsItem(
+                id=str(story.id),
+                title=story.title,
+                date=datetime.datetime.fromtimestamp(story.time),
+                labels=[],
+                coverImage='',
+                description=article_summary,
+                summary=article_summary,
+                content=article_content,
+                sources=[
+                    ArticleSource(id='1',
+                                title=story.title,
+                                sourceName='HackerNews',
+                                sourceIcon='https://news.ycombinator.com/y18.svg',
+                                url=story.url or '')
+                ]
+            ).model_dump_json(by_alias=True))
+            )
+        except Exception as e:
+            print(f'there was an error while processing the story => {e}')
         
     await client.close()
     
