@@ -420,14 +420,14 @@ async def main():
             full_story = await gather_full_story_corpus(client, story)
             article_content = generate_article(full_story)
             article_summary = generate_lead(article_content)
-            # article_img = generate_image(article_summary)
+            article_img = generate_image(article_summary)
             news.append(
             json.loads(NewsItem(
                 id=str(story.id),
                 title=story.title,
                 date=datetime.datetime.fromtimestamp(story.time),
                 labels=[],
-                coverImage='',
+                coverImage=article_img,
                 description=article_summary,
                 summary=article_summary,
                 content=article_content,
