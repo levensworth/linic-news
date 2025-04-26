@@ -26,4 +26,6 @@ jobs:
         run: poetry install --no-root
 
       - name: Run hn_loader.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: poetry run python scripts/hn_loader.py
