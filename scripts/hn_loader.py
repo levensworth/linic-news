@@ -131,10 +131,11 @@ class HNClient:
         model = mapping.get(t, Item)
         return model(**data)
 
-    async def get_story(self, id: int) -> Story:
+    async def get_story(self, id: int) -> Optional[Story]:
         item = await self.get_item(id)
         if not isinstance(item, Story):
-            raise TypeError(f"Item {id} is not a story")
+            # raise TypeError(f"Item {id} is not a story")
+            return None
         return item
 
     async def get_comment(self, id: int) -> Comment:
@@ -207,14 +208,16 @@ class HNClient:
         resp.raise_for_status()
         ids = resp.json() or []
         tasks = [self.get_story(i) for i in ids[:limit]]
-        return await asyncio.gather(*tasks)
+        filtered_stories = [ story for story in await asyncio.gather(*tasks) if story is not None]
+        return filtered_stories
 
     async def get_top_stories(self, limit: int = 30) -> List[Story]:
         resp = await self.client.get(f"{self.base_url}/topstories.json")
         resp.raise_for_status()
         ids = resp.json() or []
         tasks = [self.get_story(i) for i in ids[:limit]]
-        return await asyncio.gather(*tasks)
+        filtered_stories = [ story for story in await asyncio.gather(*tasks) if story is not None]
+        return filtered_stories
 
     async def close(self) -> None:
         await self.client.aclose()
