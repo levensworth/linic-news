@@ -371,7 +371,7 @@ def generate_image(article_summary):
     result = client.images.generate(
     model="gpt-image-1",
     size='1024x1024',
-    response_format='b64_json',
+    # response_format='b64_json',
     prompt="Generate a cover image in  8bit style for an article which contains the following summary: " + article_summary
 )
 
