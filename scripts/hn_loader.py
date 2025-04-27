@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import re
 from typing import List, Optional, Union, Literal
 
 import httpx
@@ -341,6 +342,57 @@ def generate_article(prompt: str) -> str:
     return response.choices[0].message.content.strip()
 
 
+def filter_article(story: Story) -> bool:
+    """
+    Summarize a list of comment texts using OpenAI.
+    """
+
+    source_material = (
+        "<title> \n" +
+        story.title or "no title" +
+        "</title> \n" +
+        "<url> \n" + 
+        story.url or 'no url' +
+        "</url> \n" + 
+        "<content>\n" +
+        story.text or "no content" +
+        "</content>\n" +
+        "<comment_count>\n" +
+        len(story.kids) +
+        "</comment_count>\n"
+    )
+    prompt = (
+        "Judge if the following source material could be of interest for our readers.\n" +
+        "You should remember our readers interest are based on the following principles:\n" + 
+        "We want new DYI projects which are related to robotics, clever use of software for automation, gaming or electronics which can be replicate by a person.\n" +
+        "We like information which could prove helpful to build a new startup.\n" +
+        "We like scientific innovation in areas such as biology, mechanics, automobile and electronics. \n" +
+        "We don't care about US specific taxes or problems which can't be understood by people living outside USA.\n" +
+        "You answer MUST be tagged with <judge_answer></judge_answer> and it will be evaluated using the literals ['yes', 'no'] python function.\n" +
+        "As an example <judge_answer>Yes</judge_answer>  => False \n" +
+        "As an example <judge_answer>yes</judge_answer>  => True \n" +
+        "As an example <judge_answer>No</judge_answer>  => False \n" +
+        "As an example <judge_answer>probably</judge_answer>  => False \n" +
+        "<source_material>\n" +
+        source_material +
+        "</source_material>\n" 
+    )
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=20,
+        temperature=0.7
+    )
+    answer = response.choices[0].message.content.strip()
+    
+    result = re.search(r"<judge_answer>(.*?)</judge_answer>", answer)
+
+    if result:
+        value = result.group(1).strip()
+        return value.lower() == 'yes'
+    return False
+
+
 def generate_lead(article):
     """
     Summarize a list of comment texts using OpenAI.
@@ -372,7 +424,7 @@ def generate_image(article_summary):
     model="gpt-image-1",
     size='1024x1024',
     # response_format='b64_json',
-    prompt="Generate a cover image in  8bit style for an article which contains the following summary: " + article_summary
+    prompt="Generate a cover image in  8bit style for an article which contains the following summary, the image should not contain any brands or or infringe any IP laws, it should be simply a visually pleasing image for a personal news paper: " + article_summary
 )
 
     image_base64 = result.data[0].b64_json
@@ -411,12 +463,17 @@ class NewsItem(CamelCaseDTO):
 # Usage example
 async def main():
     client = HNClient()
-    top_stories = await client.get_top_stories(5)
+    top_stories = await client.get_top_stories(50)
     news = []
+    max_stories = 10
     for story in top_stories:
         
         try:
             print(f'generating articles for post about {story.title}')
+            is_it_worth = filter_article(story)
+            if not is_it_worth:
+                print('skipping story due to not being of interest')
+                continue
             full_story = await gather_full_story_corpus(client, story)
             article_content = generate_article(full_story)
             article_summary = generate_lead(article_content)
@@ -440,6 +497,9 @@ async def main():
                 ]
             ).model_dump_json(by_alias=True))
             )
+            if len(news) >= max_stories:
+                print(f'we reached the max stories {len(news)}')
+                break
         except Exception as e:
             print(f'there was an error while processing the story => {e}')
         

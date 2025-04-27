@@ -14,7 +14,7 @@ export default function NewsFeed() {
       <div className="space-y-6">
         {mockNews.map((item: NewsItem) => (
           <Link to={`/news/${item.id}`} key={item.id}>
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-y-2 max-h-56">
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-y-2 md:max-h-56">
               <div className="md:flex">
                 <div className="md:w-1/3">
                 
